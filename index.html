@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ข้อสอบปลายภาค ก้าวทันคอมพิวเตอร์ ม.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#25254a; --muted:#6b6d8f; --line:#e3e5f6; --paper:#ffffff;
+  --blue:#2f80ed; --sun:#ffc531; --coral:#ff5e6c; --mint:#12b998; --grape:#7c5cff;
+  --bg1:#eaf3ff; --bg2:#f5edff;
+  --head:'Mali','Sarabun',sans-serif; --body:'Sarabun','Mali',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--body);color:var(--ink);font-size:17px;line-height:1.55;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));min-height:100vh;overflow-x:hidden}
+h1,h2,h3{font-family:var(--head);margin:0}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+
+/* floating blobs */
+.blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.blobs i{position:absolute;border-radius:50%;opacity:.35;filter:blur(2px);animation:float 14s ease-in-out infinite}
+.blobs i:nth-child(1){width:220px;height:220px;background:var(--sun);top:-60px;left:-50px}
+.blobs i:nth-child(2){width:180px;height:180px;background:var(--mint);bottom:8%;right:-50px;animation-delay:-4s}
+.blobs i:nth-child(3){width:140px;height:140px;background:var(--grape);top:40%;left:-40px;animation-delay:-8s}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-26px) scale(1.06)}}
+
+.wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:18px 14px 60px;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+.screen{display:none}
+.screen.active{display:block}
+.card{background:var(--paper);border-radius:22px;padding:22px;box-shadow:0 8px 28px rgba(60,60,140,.12);border:2px solid #fff;margin-bottom:16px}
+.pop{animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+
+.hero{text-align:center}
+.mascot{font-size:64px;display:inline-block;animation:bounce 1.6s ease-in-out infinite}
+.mascot.big{font-size:76px}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px) rotate(-4deg)}}
+.hero h1{font-size:28px;line-height:1.25;margin:6px 0 2px}
+.hero .sub{color:var(--muted);font-weight:600}
+
+label.field{display:block;font-weight:700;margin:14px 0 6px}
+.input{width:100%;padding:13px 15px;border-radius:14px;border:2.5px solid var(--line);background:#fbfbff;outline:none;transition:.15s}
+.input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,128,237,.15)}
+.err{color:var(--coral);font-weight:700;min-height:1.4em;margin:8px 0 0}
+
+.btn{border:0;cursor:pointer;font-weight:700;border-radius:16px;padding:14px 22px;color:#fff;
+  background:linear-gradient(135deg,var(--blue),var(--grape));box-shadow:0 5px 0 rgba(37,37,74,.18);transition:transform .08s,box-shadow .08s;font-size:18px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(37,37,74,.18)}
+.btn.green{background:linear-gradient(135deg,var(--mint),#22c55e)}
+.btn.coral{background:linear-gradient(135deg,var(--coral),#ff8a4c)}
+.btn.block{display:block;width:100%}
+.btn[disabled]{background:#c9cbe0;box-shadow:none;cursor:not-allowed;transform:none}
+.ghost{background:transparent;border:2.5px solid var(--line);color:var(--ink);box-shadow:none;font-size:16px}
+.ghost:active{transform:none}
+.link{background:none;border:0;color:#a3a5c4;font-size:13px;cursor:pointer;text-decoration:underline;padding:6px}
+
+.hint{background:#fff8dc;border:2px dashed var(--sun);border-radius:16px;padding:14px 16px;margin-top:16px;font-size:16px}
+.hint ul{margin:6px 0 0;padding-left:20px}
+.hint li{margin:3px 0}
+.watch{background:#ffe9ec;border:2px dashed var(--coral);border-radius:16px;padding:14px 16px;margin-top:12px;font-size:16px}
+.resume{background:#e7f8f2;border:2px solid var(--mint);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+
+/* quiz */
+.topbar{position:sticky;top:0;z-index:20;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;
+  padding:10px 8px;padding-top:max(10px,env(safe-area-inset-top));
+  background:rgba(245,240,255,.92);backdrop-filter:blur(8px);border-bottom:2px solid #fff}
+.pill{background:#fff;border:2.5px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:700;font-size:15px;white-space:nowrap}
+.pill.timer{border-color:var(--blue);color:var(--blue)}
+.pill.timer.urgent{border-color:var(--coral);color:#fff;background:var(--coral);animation:pulse .7s infinite}
+.pill.watchp{border-color:var(--mint);color:#0d8f75}
+.pill.watchp.bad{border-color:var(--coral);color:var(--coral);background:#fff1f2}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.sec-title{font-family:var(--head);font-size:21px;margin:22px 4px 10px;display:flex;align-items:center;gap:8px}
+.qcard{background:#fff;border-radius:20px;padding:18px;margin-bottom:14px;border:3px solid #fff;box-shadow:0 6px 20px rgba(60,60,140,.10);transition:border-color .2s}
+.qcard.done{border-color:#bff0e3}
+.qnum{display:inline-block;background:var(--grape);color:#fff;border-radius:999px;padding:1px 12px;font-weight:700;font-size:14px;margin-bottom:6px}
+.qtext{font-weight:600;margin:2px 0 12px;font-size:18px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:2.5px solid var(--line);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:.12s;background:#fcfcff}
+.opt:hover{border-color:#b9c8ff}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt .letter{flex:0 0 30px;height:30px;border-radius:50%;background:#eceefe;color:var(--grape);font-weight:700;display:grid;place-items:center}
+.opt.sel{border-color:var(--blue);background:#eaf3ff}
+.opt.sel .letter{background:var(--blue);color:#fff}
+.submitbar{text-align:center;margin-top:20px}
+.unans{color:var(--muted);font-size:15px;margin:8px 0 0}
+body.quiz-on .wrap{-webkit-user-select:none;user-select:none}
+
+/* result */
+.result-hero{text-align:center}
+.bigscore{font-family:var(--head);font-size:76px;font-weight:700;line-height:1;color:var(--blue)}
+.bigscore span{font-size:30px;color:var(--muted);margin-left:6px}
+.pct{font-family:var(--head);font-size:24px;margin:4px 0 10px}
+.tag{display:inline-block;border-radius:999px;padding:6px 18px;font-weight:700}
+.tag.pass{background:#d9f8ee;color:#0b8a6f}
+.tag.fail{background:#ffe6e9;color:#d63a4a}
+.note{border-radius:14px;padding:10px 14px;margin-top:12px;font-weight:600}
+.note.warn{background:#fff3d6;color:#8a5a00}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border-radius:14px;padding:10px 14px;background:#f3f4ff;font-weight:700;flex:1 1 150px;text-align:center}
+.chip b{display:block;font-family:var(--head);font-size:28px;line-height:1.1}
+.chip.bad{background:#ffe6e9;color:#c62f40}
+.chip.ok{background:#e3f8f1;color:#0b8a6f}
+.integ{border-radius:14px;padding:12px 14px;font-weight:600}
+.integ.ok{background:#e3f8f1;color:#0b8a6f}
+.integ.bad{background:#fff1f2;color:#b42335}
+.log{font-size:15px;color:var(--muted);margin:10px 0 0;padding-left:20px}
+.code{width:100%;min-height:74px;padding:10px;border-radius:12px;border:2px dashed var(--line);background:#fafaff;font-family:monospace;font-size:13px;word-break:break-all}
+.rev{border-top:2px dashed var(--line);padding:12px 0}
+.rev:first-child{border-top:0}
+.rev .q{font-weight:600}
+.ans-ok{color:#0b8a6f;font-weight:700}
+.ans-bad{color:#d63a4a;font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.row>*{flex:1 1 180px}
+
+/* history & teacher */
+.hist{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;border:2.5px solid var(--line);border-radius:16px;margin-bottom:10px;cursor:pointer;background:#fcfcff}
+.hist:hover{border-color:var(--blue)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 10px;border-bottom:1.5px solid var(--line);text-align:left;white-space:nowrap}
+th{background:#f3f4ff;font-family:var(--head)}
+tr.flag td{background:#fff5f6}
+textarea.big{width:100%;min-height:120px;padding:12px;border-radius:14px;border:2.5px solid var(--line);font-family:monospace;font-size:13px}
+
+#wm{display:none;position:fixed;inset:0;z-index:15;pointer-events:none;background-repeat:repeat}
+.modal .input{margin-top:8px}
+/* overlays */
+#awayMask{display:none;position:fixed;inset:0;z-index:900;background:#25254a;color:#fff;text-align:center;place-items:center;padding:30px}
+body.away #awayMask{display:grid}
+#awayMask div{max-width:420px}
+#awayMask .em{font-size:64px}
+#flash{position:fixed;inset:0;background:#000;z-index:950;opacity:0;pointer-events:none;transition:opacity .08s}
+#flash.on{opacity:1}
+.modal{display:none;position:fixed;inset:0;z-index:800;background:rgba(37,37,74,.75);place-items:center;padding:20px}
+.modal.on{display:grid}
+.modal .box{background:#fff;border-radius:24px;padding:26px 22px;max-width:440px;width:100%;text-align:center;animation:pop .35s cubic-bezier(.2,1.4,.4,1) both}
+.modal .em{font-size:60px;line-height:1}
+.modal h2{font-size:24px;margin:8px 0 6px}
+.modal.danger .box{border:5px solid var(--coral)}
+.modal .counts{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.modal .counts span{background:#fff1f2;color:#c62f40;border-radius:999px;padding:4px 12px;font-weight:700;font-size:15px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:999px;padding:10px 20px;z-index:700;font-weight:600;opacity:0;pointer-events:none;transition:.25s}
+.toast.on{opacity:1}
+
+@media print{ body *{display:none!important} body::before{content:"ไม่อนุญาตให้พิมพ์ข้อสอบ";display:block!important;font-size:30px;padding:40px} }
+@media (max-width:480px){ body{font-size:16px} .hero h1{font-size:24px} .bigscore{font-size:64px} }
+</style>
+</head>
+<body>
+<div class="blobs"><i></i><i></i><i></i></div>
+
+<!-- covers the exam while the student is away / something overlays the window -->
+<div id="awayMask"><div><div class="em">🔒</div><h2 style="margin:8px 0">กำลังพักหน้าจอสอบ</h2><p>ตรวจพบว่าหน้าต่างสอบไม่ได้อยู่ด้านหน้า<br>กลับมาที่หน้าต่างนี้เพื่อทำข้อสอบต่อ<br>ระบบกำลังบันทึกเวลาที่ออกไป</p></div></div>
+<div id="flash"></div>
+<div id="wm"></div>
+
+<!-- warning modal -->
+<div id="modalWarn" class="modal danger"><div class="box">
+  <div class="em" id="wIcon">⚠️</div>
+  <h2 id="wTitle">แจ้งเตือน</h2>
+  <p id="wMsg"></p>
+  <div class="counts" id="wCounts"></div>
+  <p style="font-size:15px;color:var(--muted)">ระบบบันทึกไว้แล้ว ครูจะเห็นจำนวนครั้งนี้พร้อมคะแนนของเธอ</p>
+  <button class="btn coral block" id="wOk">รับทราบ กลับไปทำข้อสอบ</button>
+</div></div>
+
+<!-- confirm submit -->
+<div id="modalConfirm" class="modal"><div class="box">
+  <div class="em">📮</div>
+  <h2>ส่งข้อสอบเลยไหม?</h2>
+  <p>ตอบครบทุกข้อแล้ว เมื่อส่งแล้วจะแก้ไขไม่ได้นะ</p>
+  <div class="row">
+    <button class="btn ghost" id="cNo">ตรวจอีกครั้ง</button>
+    <button class="btn green" id="cYes">ส่งข้อสอบ</button>
+  </div>
+</div></div>
+
+<!-- teacher PIN (ใช้ช่องกรอกในหน้าเว็บ แทน prompt() ที่มือถือ/Artifact มักบล็อก) -->
+<div id="modalPin" class="modal"><div class="box">
+  <div class="em">🔐</div>
+  <h2>สำหรับครู</h2>
+  <p style="margin:2px 0">ใส่ PIN เพื่อเข้าโหมดครู</p>
+  <input id="pinIn" class="input" type="password" inputmode="numeric" autocomplete="off" style="text-align:center;font-size:26px;letter-spacing:6px">
+  <div class="err" id="pinErr"></div>
+  <div class="row"><button class="btn ghost" id="pinNo">ยกเลิก</button><button class="btn" id="pinOk">เข้าสู่ระบบ</button></div>
+</div></div>
+
+<!-- generic confirm -->
+<div id="modalAsk" class="modal"><div class="box">
+  <div class="em">❓</div>
+  <h2 id="askMsg" style="font-size:20px"></h2>
+  <div class="row"><button class="btn ghost" id="askNo">ยกเลิก</button><button class="btn coral" id="askYes">ยืนยัน</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="wrap">
+
+<!-- ================= START ================= -->
+<section id="s-start" class="screen active">
+  <div class="card hero pop">
+    <div class="mascot">🦊</div>
+    <h1>ข้อสอบปลายภาค<br>ก้าวทันคอมพิวเตอร์ ม.2</h1>
+    <div class="sub">ตอนที่ 1 ปรนัย · ภาคเรียนที่ 1 ปีการศึกษา 2569</div>
+  </div>
+
+  <div class="card pop">
+    <div id="resumeBox" class="resume" style="display:none"></div>
+    <h2 style="font-size:21px">✍️ ลงชื่อเข้าสอบ</h2>
+    <label class="field" for="inName">ชื่อ-นามสกุล</label>
+    <input id="inName" class="input" type="text" placeholder="เช่น ด.ช.สมชาย ใจดี" autocomplete="off">
+    <label class="field" for="inNo">เลขที่</label>
+    <input id="inNo" class="input" type="text" inputmode="numeric" placeholder="เช่น 12" maxlength="3" autocomplete="off">
+    <div class="err" id="startErr"></div>
+
+    <div class="hint">
+      <b>📋 กติกาการสอบ</b>
+      <ul id="rules"></ul>
+    </div>
+    <div class="watch">
+      <b>👀 ระหว่างสอบ ระบบจะบันทึกและแจ้งเตือน</b>
+      <ul style="margin:6px 0 0;padding-left:20px">
+        <li>ออกจากหน้าจอสอบ (สลับแท็บ/แอป, ปิดหน้าจอ, ปิดหน้าเว็บ)</li>
+        <li>มีหน้าต่างอื่นมาทับหน้าจอสอบ</li>
+        <li>พยายามแคปหน้าจอ / พิมพ์ / บันทึกหน้าข้อสอบ</li>
+      </ul>
+      <div style="margin-top:6px">จำนวนครั้งจะแสดงในหน้าคะแนนและส่งให้ครูเห็นด้วย ✅ ตั้งใจสอบเต็มที่นะ</div>
+    </div>
+
+    <button class="btn block" id="btnStart" style="margin-top:18px">🚀 เริ่มทำข้อสอบ</button>
+    <button class="btn ghost block" id="btnHist" style="margin-top:10px">📜 ดูประวัติผลสอบของฉัน</button>
+    <div style="text-align:center;margin-top:14px"><button class="btn ghost" id="btnTeacher" style="font-size:15px;padding:10px 18px;min-height:44px">🧑‍🏫 สำหรับครู</button></div>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section id="s-quiz" class="screen">
+  <div class="topbar">
+    <div class="pill" id="pillProg">ตอบแล้ว 0/30</div>
+    <div class="pill timer" id="pillTimer">⏱ <span id="timerText">--:--</span></div>
+    <div class="pill watchp" id="pillWatch">✅ ปกติ</div>
+  </div>
+  <div id="quizBody" style="margin-top:12px"></div>
+  <div class="submitbar">
+    <button class="btn green block" id="btnSubmit" disabled>📮 ส่งข้อสอบ</button>
+    <div class="unans" id="unans"></div>
+  </div>
+</section>
+
+<!-- ================= RESULT ================= -->
+<section id="s-result" class="screen">
+  <div id="resultBody"></div>
+  <div class="row"><button class="btn block" id="btnHome">🏠 กลับหน้าแรก</button></div>
+</section>
+
+<!-- ================= HISTORY ================= -->
+<section id="s-history" class="screen">
+  <div class="card pop">
+    <h2>📜 ประวัติผลสอบของฉัน</h2>
+    <p id="histWho" style="color:var(--muted)"></p>
+    <div id="histList"></div>
+    <button class="btn ghost block" id="btnHistBack" style="margin-top:10px">← กลับ</button>
+  </div>
+</section>
+
+<!-- ================= TEACHER ================= -->
+<section id="s-teacher" class="screen">
+  <div class="card pop">
+    <h2>🧑‍🏫 โหมดครู</h2>
+    <p style="color:var(--muted);margin-top:4px">วางรหัสส่งครู (ขึ้นต้นด้วย PDT1-) ของนักเรียนได้หลายรหัสพร้อมกัน ระบบจะสะสมไว้บนเครื่องนี้และไม่นับรหัสซ้ำ</p>
+    <textarea id="tCodes" class="big" placeholder="วางรหัสที่นี่ (คั่นด้วยบรรทัดใหม่หรือเว้นวรรค)"></textarea>
+    <div class="row">
+      <button class="btn" id="tProcess">ประมวลผลคะแนน</button>
+      <button class="btn ghost" id="tCopy">คัดลอกตาราง (วางใน Sheets/Notion)</button>
+    </div>
+    <div class="err" id="tMsg"></div>
+    <div class="chips" id="tStats"></div>
+    <div class="tablewrap"><table id="tTable"></table></div>
+    <div class="row">
+      <button class="btn ghost" id="tClear">🗑 ล้างรายการทั้งหมด</button>
+      <button class="btn ghost" id="tClearProg">ล้างข้อสอบที่ค้างบนเครื่องนี้</button>
+      <button class="btn ghost" id="tBack">← กลับ</button>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script async src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+/* =====================================================================
+   ตั้งค่าที่ครูแก้ได้
+   ===================================================================== */
+const PASS_PERCENT = 50;            // เกณฑ์ผ่าน (ร้อยละ)
+const TIME_LIMIT_MINUTES = 40;      // เวลาสอบ (นาที)
+const TEACHER_PIN = '2569';         // PIN โหมดครู (กันคนกดเล่นเฉยๆ ไม่ใช่ความปลอดภัยจริง — ไฟล์นี้เปิดอ่านได้)
+const SHOW_CORRECT_ANSWERS = true;  // true = นักเรียนเห็นเฉลยในหน้าทบทวนหลังส่ง / false = เห็นแค่ถูกหรือผิด
+const WARN_SOUND = true;           // true = มีเสียงติ๊ด + สั่น (มือถือ) ทุกครั้งที่ตรวจพบเหตุการณ์ / false = ปิดเสียง
+const AWAY_GRACE_MS = 400;          // หน้าต่างทับสั้นกว่านี้ (มิลลิวินาที) ไม่นับเป็นเหตุการณ์
+const STORE = 'kaotan_m2_end1_2569';
+
+/* =====================================================================
+   คลังข้อสอบ (ทุกคนได้ชุดเดียวกัน — สลับเฉพาะลำดับข้อในแต่ละส่วนและลำดับตัวเลือก)
+   รูปแบบ: [คำถาม, [ตัวเลือก], index ของข้อที่ถูก]
+   ===================================================================== */
+const SECTIONS = [
+ {title:'ส่วนที่ 1 · Google Docs', emoji:'📝', qs:[
+  ['เมื่อสร้างเอกสารใหม่ สิ่งที่ควรทำก่อนเพื่อให้หาไฟล์เจอง่ายคืออะไร',['เปลี่ยนสีพื้นหลัง','ตั้งชื่อไฟล์ให้ชัดเจน','ปิดการบันทึกอัตโนมัติ','ใส่รูปภาพก่อน'],1],
+  ['ข้อใดคือข้อดีของ Google Docs',['ใช้ได้ทุกที่โดยไม่ต้องต่อเน็ต','พิมพ์ได้เร็วกว่าโปรแกรมอื่น','ไม่ต้องใช้บัญชี Google','บันทึกให้อัตโนมัติออนไลน์'],3],
+  ['ต้องการเพิ่มแถวในตาราง ควรทำอย่างไร',['ลบตารางแล้วสร้างใหม่','พิมพ์ต่อท้ายตาราง','คลิกขวาแล้วเพิ่มแถว','เปลี่ยนขนาดฟอนต์'],2],
+  ['ต้องการให้ข้อความล้อมรอบรูปภาพ ควรเลือกข้อใด',['Wrap text (ล้อมข้อความ)','Crop (ตัดรูป)','Delete (ลบรูป)','Rotate (หมุนรูป)'],0]
+ ]},
+ {title:'ส่วนที่ 2 · แชร์และทำงานร่วมกัน', emoji:'🤝', qs:[
+  ['ต้องการให้เพื่อนดูงานได้อย่างเดียว ควรตั้งสิทธิ์ใด',['Editor (ผู้แก้ไข)','Viewer (ผู้ดู)','Commenter (ผู้แสดงความเห็น)','Owner (เจ้าของ)'],1],
+  ['ต้องการให้เพื่อนเขียนความเห็นข้างเอกสารโดยไม่แก้ข้อความ ควรตั้งสิทธิ์ใด',['Commenter (ผู้แสดงความเห็น)','Viewer (ผู้ดู)','Editor (ผู้แก้ไข)','ปิดการแชร์'],0],
+  ['กลุ่มต้องช่วยกันแก้ไฟล์เดียวกันพร้อมกัน ควรตั้งสิทธิ์ใดให้สมาชิก',['Editor (ผู้แก้ไข)','Viewer (ผู้ดู)','Commenter (ผู้แสดงความเห็น)','ไม่ต้องแชร์'],0],
+  ['เนื้อหาในไฟล์หายไปหลังเพื่อนแก้ ควรกู้คืนด้วยวิธีใด',['สร้างเอกสารใหม่','ปิดเครื่องแล้วเปิดใหม่','ให้เพื่อนพิมพ์คืน','Version history (ประวัติเวอร์ชัน)'],3],
+  ['การส่งงานให้ครูทางลิงก์ ควรทำอย่างไร',['แชร์ให้ครูแล้วตรวจว่าเปิดได้','เปิดให้ทุกคนแก้ไขได้','ส่งรหัสผ่านให้ครู','ส่งเป็นภาพหน้าจอ'],0]
+ ]},
+ {title:'ส่วนที่ 3 · Google Slides', emoji:'🖼️', qs:[
+  ['สไลด์นำเสนอที่ดีควรเป็นอย่างไร',['ข้อความยาวเต็มหน้า','ข้อความสั้น มีรูปประกอบ','ตัวอักษรเล็ก ใส่ได้มาก','ใส่ลูกเล่นให้ครบทุกจุด'],1],
+  ['"1 สไลด์ 1 ความคิด" หมายถึงข้อใด',['ทำสไลด์เพียง 1 หน้า','ใช้ 1 สีต่อสไลด์','ใส่รูป 1 รูปทั้งงาน','สื่อ 1 ประเด็นต่อสไลด์'],3],
+  ['ข้อใดเลือกสีตัวอักษรบนพื้นหลังได้เหมาะสม',['ส้มอ่อนบนพื้นเหลือง','ฟ้าอ่อนบนพื้นขาว','ดำบนพื้นเหลืองอ่อน','เขียวบนพื้นแดง'],2],
+  ['การใส่ Animation (ภาพเคลื่อนไหว) ควรทำอย่างไร',['ใส่ทุกแบบให้ครบ','ให้ตัวอักษรบินจากทุกทิศ','ใส่พอดี เช่น Fade in','ใส่ให้สไลด์ยาวขึ้น'],2],
+  ['ข้อใดอ่านง่ายที่สุด',['เหลืองบนพื้นขาว','ชมพูอ่อนบนพื้นขาว','เทาอ่อนบนพื้นเทา','ขาวบนพื้นน้ำเงินเข้ม'],3],
+  ['สมาชิกทำสไลด์คนละแผ่นแล้วรวมกัน ปัญหาที่ควรระวังคืออะไร',['สไลด์มีจำนวนมากเกินไป','ธีมและฟอนต์ไม่ตรงกัน','ต้องใช้คอมคนละเครื่อง','แชร์ไฟล์กันไม่ได้'],1]
+ ]},
+ {title:'ส่วนที่ 4 · Canva', emoji:'🎨', qs:[
+  ['Canva ใช้สำหรับทำอะไร',['ออกแบบกราฟิกออนไลน์','คำนวณตัวเลข','ตัดต่อเสียง','พิมพ์เอกสาร'],0],
+  ['องค์ประกอบวางกระจัดกระจายไม่เป็นระเบียบ ควรใช้หลักใดแก้ไข',['เพิ่มสีให้มากขึ้น','ใส่ฟอนต์เพิ่ม','Alignment (จัดแนวให้ตรง)','ลดขนาดตัวอักษร'],2],
+  ['การเลือกชุดสีสำหรับงานหนึ่งชิ้น ควรทำอย่างไร',['ใช้ทุกสีที่ชอบ','ใช้ชุดสีหลักไม่เกิน 3 สี','ใช้สีสะท้อนแสงทั้งหมด','สุ่มสีทุกหน้า'],1],
+  ['การใช้ฟอนต์หลายแบบปนกันมากเกินไปทำให้เกิดอะไร',['งานดูเป็นระเบียบขึ้น','อ่านง่ายขึ้น','ไฟล์เล็กลง','งานดูรก อ่านยากขึ้น'],3],
+  ['ในงาน "รู้จักกับตัวฉัน" รูปและ Element (องค์ประกอบตกแต่ง) ควรเป็นแบบใด',['เลือกที่สวยที่สุดเสมอ','ใส่ให้เต็มทุกพื้นที่','ไม่ต้องใส่อะไรเลย','เกี่ยวกับเรื่องของตัวเอง'],3],
+  ['ต้องการบันทึกงานจาก Canva เป็นไฟล์ภาพ ควรทำอย่างไร',['ส่งลิงก์ให้เพื่อน','คัดลอกข้อความไปวาง','ดาวน์โหลดเป็น PNG','ปิดโปรแกรมทันที'],2]
+ ]},
+ {title:'ส่วนที่ 5 · มินิคอร์ส: ออกแบบสินค้า', emoji:'🛍️', qs:[
+  ['การออกแบบสินค้าแก้ปัญหาในชีวิตจริง ควรเริ่มจากอะไร',['เลือกสินค้าราคาแพง','ลอกสินค้าที่มีอยู่แล้ว','ออกแบบโปสเตอร์ก่อน','หาปัญหาในชีวิตจริง'],3],
+  ['ข้อใดเป็นปัญหาที่เหมาะนำมาออกแบบสินค้า',['ฉันชอบสีชมพู','กระเป๋านักเรียนหนักเกินไป','ดวงจันทร์อยู่ไกลโลก','ท้องฟ้าเป็นสีฟ้า'],1],
+  ['ทำไมต้องระบุกลุ่มลูกค้าของสินค้า',['เพื่อออกแบบให้ตรงความต้องการ','เพื่อตั้งราคาให้สูงขึ้น','เพื่อให้สินค้ามีสีสวย','ไม่จำเป็นต้องระบุ'],0],
+  ['จุดเด่นของสินค้า (Selling Point) คืออะไร',['ราคาที่ขายจริง','ชื่อทีมผู้ทำ','สิ่งที่ทำให้สินค้าโดดเด่น','ขนาดของโปสเตอร์'],2],
+  ['องค์ประกอบใดควรเด่นที่สุดในโปสเตอร์โฆษณา',['รายชื่อสมาชิกตัวใหญ่','ลายเส้นรอบขอบ','ข้อความอธิบายยาวๆ','ชื่อสินค้าและภาพสินค้า'],3],
+  ['สโลแกน (Slogan: คำโฆษณาสั้นๆ) ที่ดีควรเป็นอย่างไร',['ยาวเป็นย่อหน้า','สั้น จำง่าย','ใช้ศัพท์ยากๆ','เหมือนสินค้าอื่น'],1],
+  ['ลำดับการนำเสนอขายสินค้าข้อใดเหมาะสมที่สุด',['ปัญหา → สินค้า → จุดเด่น → เชิญชวน','เชิญชวน → ปัญหา → สินค้า → จุดเด่น','ราคา → ทีมงาน → ปัญหา → สินค้า','จุดเด่น → เชิญชวน → ปัญหา → สินค้า'],0],
+  ['ข้อความโฆษณาข้อใดไม่เหมาะสม',['ลดน้ำหนักกระเป๋าตามที่ทดลองจริง','ออกแบบให้กางออกง่าย','ใช้แล้วหายทุกโรคทันที','เหมาะกับนักเรียนที่เดินไกล'],2],
+  ['เพื่อนบอกว่าไม่เข้าใจว่าสินค้าใช้ทำอะไร ทีมควรทำอย่างไร',['เพิ่มภาพและตัวอย่างใช้งาน','พูดเสียงดังขึ้น','อ่านซ้ำให้เร็วขึ้น','ข้ามไปสไลด์สุดท้าย'],0]
+ ]}
+];
+const QUESTIONS = [];
+SECTIONS.forEach((s,si)=>s.qs.forEach(q=>QUESTIONS.push({id:QUESTIONS.length,sec:si,q:q[0],o:q[1],a:q[2]})));
+const TOTAL = QUESTIONS.length;
+const LET = ['ก','ข','ค','ง'];
+
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function fmt(s){ s=Math.max(0,Math.round(s)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function b64enc(s){ const b=new TextEncoder().encode(s); let bin=''; b.forEach(c=>bin+=String.fromCharCode(c)); return btoa(bin); }
+function b64dec(x){ const bin=atob(x); return new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))); }
+function thDate(iso){ try{ return new Date(iso).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}); }catch(e){ return iso; } }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),1800); }
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id)); window.scrollTo(0,0); if(id!=='s-quiz'&&id!=='s-result') clearWatermark(); }
+const histKey = (no,name)=>STORE+':h:'+no+'|'+name;
+const PROG_KEY = STORE+':progress';
+const TEACH_KEY = STORE+':teacher';
+
+/* =====================================================================
+   State
+   ===================================================================== */
+let ident = {name:'',no:''};
+let exam = null;             // สถานะข้อสอบที่กำลังทำ (บันทึกลงเครื่องตลอดเพื่อกันรีเฟรชล้างจำนวนครั้ง)
+let examSubmitted = false;
+let quizActive = false;
+let timerInt = null, pollInt = null;
+let away = null;             // {t0, hidden}
+let wantFs = false;
+let lastShot = 0;
+let dispNo = {};
+
+function saveProgress(){ if(exam) lsSet(PROG_KEY,{ident,exam}); }
+
+/* =====================================================================
+   เสียงเตือน / ลายน้ำ / ตัวช่วยกล่องยืนยัน
+   ===================================================================== */
+let audioCtx=null;
+function initAudio(){
+  try{ if(!audioCtx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) audioCtx=new AC(); }
+       if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume(); }catch(e){}
+}
+function beep(){
+  if(!WARN_SOUND) return;
+  try{ if(navigator.vibrate) navigator.vibrate([200,80,200]); }catch(e){}
+  try{ if(!audioCtx) return;
+       const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+       o.type='square'; o.frequency.value=880; g.gain.value=.08;
+       o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+.35); }catch(e){}
+}
+// ลายน้ำชื่อ+เลขที่ของนักเรียน: แคปจอมือถือตรวจจับไม่ได้ แต่ภาพที่ถูกแคปจะมีชื่อเจ้าของติดอยู่ ตามตัวได้
+function setWatermark(name,no){
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="340" height="190"><text x="20" y="120" transform="rotate(-24 170 95)" font-size="20" font-family="Sarabun,Tahoma,sans-serif" fill="rgba(37,37,74,0.14)">'+esc(name)+' · เลขที่ '+esc(no)+'</text></svg>';
+  const w=$('wm'); w.style.backgroundImage='url("data:image/svg+xml;utf8,'+encodeURIComponent(svg)+'")'; w.style.display='block';
+}
+function clearWatermark(){ $('wm').style.display='none'; }
+function askConfirm(msg,onYes){
+  $('askMsg').textContent=msg; $('modalAsk').classList.add('on');
+  $('askYes').onclick=()=>{ $('modalAsk').classList.remove('on'); onYes(); };
+  $('askNo').onclick=()=>$('modalAsk').classList.remove('on');
+}
+
+/* =====================================================================
+   Start screen
+   ===================================================================== */
+function renderRules(){
+  $('rules').innerHTML =
+    '<li>ปรนัย <b>'+TOTAL+' ข้อ</b> ข้อละ 1 คะแนน</li>'+
+    '<li>เกณฑ์ผ่าน <b>'+PASS_PERCENT+'%</b></li>'+
+    '<li>เวลาสอบ <b>'+TIME_LIMIT_MINUTES+' นาที</b> (หมดเวลาระบบส่งให้อัตโนมัติ)</li>'+
+    '<li>ข้อสอบและตัวเลือก <b>สลับลำดับคนละชุด</b></li>'+
+    '<li>ต้องตอบครบทุกข้อ ปุ่มส่งจึงจะกดได้</li>';
+}
+function checkResumeBox(){
+  const p = lsGet(PROG_KEY,null);
+  const box = $('resumeBox');
+  if(p && p.exam){
+    box.style.display='block';
+    box.innerHTML='<b>📌 มีข้อสอบที่ยังไม่ได้ส่งบนเครื่องนี้</b><br>'+esc(p.ident.name)+' (เลขที่ '+esc(p.ident.no)+')'+
+      '<br><button class="btn green block" id="btnResume" style="margin-top:10px">กลับเข้าสอบต่อ</button>';
+    $('inName').value=p.ident.name; $('inNo').value=p.ident.no;
+    $('btnResume').onclick=resumeExam;
+  } else box.style.display='none';
+}
+function readIdent(){
+  const name=$('inName').value.trim().replace(/\s+/g,' ');
+  const no=$('inNo').value.trim();
+  if(name.length<3){ $('startErr').textContent='กรุณากรอกชื่อ-นามสกุลให้ครบก่อนนะ'; return null; }
+  if(!/^\d{1,3}$/.test(no)){ $('startErr').textContent='กรุณากรอกเลขที่เป็นตัวเลข'; return null; }
+  $('startErr').textContent='';
+  return {name,no};
+}
+function startExam(){
+  initAudio();
+  const id=readIdent(); if(!id) return;
+  const p=lsGet(PROG_KEY,null);
+  if(p && p.exam){
+    if(p.ident.name===id.name && p.ident.no===id.no){ resumeExam(); return; }
+    $('startErr').textContent='เครื่องนี้มีข้อสอบของ '+p.ident.name+' ที่ยังไม่ส่ง ให้กด "กลับเข้าสอบต่อ" ก่อน';
+    return;
+  }
+  ident=id;
+  exam={
+    startTs:Date.now(),
+    order:SECTIONS.map((s,si)=>({s:si,ids:shuffle(QUESTIONS.filter(q=>q.sec===si).map(q=>q.id))})),
+    opts:{}, answers:{}, lv:0, ov:0, sh:0, awaySec:0, resumes:0, leftAt:null, log:[]
+  };
+  QUESTIONS.forEach(q=>exam.opts[q.id]=shuffle(q.o.map((_,i)=>i)));
+  saveProgress();
+  enterQuiz();
+}
+function resumeExam(){
+  initAudio();
+  const p=lsGet(PROG_KEY,null); if(!p||!p.exam) return;
+  ident=p.ident; exam=p.exam;
+  const elapsed=(Date.now()-exam.startTs)/1000;
+  // ปิด/รีเฟรชหน้าเว็บระหว่างสอบ นับเป็น 1 ครั้งที่ออกจากหน้าจอ
+  const gone = exam.leftAt ? Math.round((Date.now()-exam.leftAt)/1000) : 0;
+  exam.resumes=(exam.resumes||0)+1;
+  exam.leftAt=null;
+  record('lv',gone,'ปิดหรือโหลดหน้าเว็บใหม่');
+  if(elapsed>=TIME_LIMIT_MINUTES*60){ enterQuiz(true); doSubmit(true); return; }
+  enterQuiz(false);
+  showWarn('rl',gone);
+}
+
+/* =====================================================================
+   Quiz
+   ===================================================================== */
+function enterQuiz(silent){
+  examSubmitted=false; quizActive=true; away=null;
+  document.body.classList.add('quiz-on');
+  showScreen('s-quiz');
+  renderQuiz(); updateProgress(); updateWatchPill();
+  setWatermark(ident.name,ident.no); vvAway=null; calibrateVV(1500);
+  clearInterval(timerInt); clearInterval(pollInt);
+  timerInt=setInterval(tick,250); tick();
+  pollInt=setInterval(poll,400);
+  tryFs();
+  window.addEventListener('beforeunload',onBeforeUnload);
+}
+function renderQuiz(){
+  let n=0, html='';
+  dispNo={};
+  exam.order.forEach(grp=>{
+    const sec=SECTIONS[grp.s];
+    html+='<div class="sec-title"><span>'+sec.emoji+'</span>'+esc(sec.title)+'</div>';
+    grp.ids.forEach(id=>{
+      n++; dispNo[id]=n;
+      const q=QUESTIONS[id];
+      html+='<div class="qcard" id="qc'+id+'"><span class="qnum">ข้อ '+n+'</span><p class="qtext">'+esc(q.q)+'</p>';
+      exam.opts[id].forEach((oi,pos)=>{
+        html+='<label class="opt" data-q="'+id+'"><input type="radio" name="q'+id+'" value="'+oi+'"><span class="letter">'+LET[pos]+'</span><span>'+esc(q.o[oi])+'</span></label>';
+      });
+      html+='</div>';
+    });
+  });
+  const body=$('quizBody'); body.innerHTML=html;
+  // restore saved answers
+  Object.keys(exam.answers).forEach(id=>{
+    const inp=body.querySelector('input[name="q'+id+'"][value="'+exam.answers[id]+'"]');
+    if(inp){ inp.checked=true; markSel(id); }
+  });
+}
+function markSel(id){
+  const card=$('qc'+id); if(!card) return;
+  card.querySelectorAll('.opt').forEach(l=>l.classList.toggle('sel',l.querySelector('input').checked));
+  card.classList.add('done');
+}
+document.addEventListener('change',e=>{
+  if(!quizActive||!e.target.matches('#quizBody input[type=radio]')) return;
+  const id=e.target.name.slice(1);
+  exam.answers[id]=+e.target.value;
+  markSel(id); updateProgress(); saveProgress();
+});
+function updateProgress(){
+  const answered=Object.keys(exam.answers).length;
+  $('pillProg').textContent='ตอบแล้ว '+answered+'/'+TOTAL;
+  $('btnSubmit').disabled = answered<TOTAL;
+  const missing=QUESTIONS.filter(q=>exam.answers[q.id]===undefined).map(q=>dispNo[q.id]).sort((a,b)=>a-b);
+  $('unans').textContent = missing.length ? 'ยังไม่ได้ตอบ: ข้อ '+missing.join(', ') : '';
+}
+function tick(){
+  if(!exam||examSubmitted) return;
+  const left=TIME_LIMIT_MINUTES*60-(Date.now()-exam.startTs)/1000;
+  $('timerText').textContent=fmt(left);
+  $('pillTimer').classList.toggle('urgent',left<=60);
+  if(left<=0) doSubmit(true);
+}
+function updateWatchPill(){
+  const t=exam.lv+exam.ov+exam.sh;
+  const p=$('pillWatch');
+  p.classList.toggle('bad',t>0);
+  p.textContent = t>0 ? '⚠️ ออกจอ '+exam.lv+' · ทับจอ '+exam.ov+' · แคป '+exam.sh : '✅ ปกติ';
+}
+$('btnSubmit').onclick=()=>{ if(Object.keys(exam.answers).length<TOTAL) return; $('modalConfirm').classList.add('on'); };
+$('cNo').onclick=()=>$('modalConfirm').classList.remove('on');
+$('cYes').onclick=()=>{ $('modalConfirm').classList.remove('on'); doSubmit(false); };
+
+/* =====================================================================
+   Integrity monitoring
+   ===================================================================== */
+function record(kind,sec,label){
+  exam[kind]=(exam[kind]||0)+1;
+  exam.awaySec=(exam.awaySec||0)+(sec||0);
+  exam.log.push({t:Math.round((Date.now()-exam.startTs)/1000),k:kind,d:sec||0,l:label});
+  if(exam.log.length>60) exam.log.shift();
+  saveProgress(); updateWatchPill(); beep();
+}
+function beginAway(){
+  if(!quizActive) return;
+  if(!away){ away={t0:Date.now(),hidden:false}; updateMask(); }
+  if(document.hidden) away.hidden=true;
+}
+function endAway(){
+  if(!away) return;
+  const a=away; away=null;
+  updateMask();
+  if(!quizActive) return;
+  const ms=Date.now()-a.t0;
+  if(!a.hidden && ms<AWAY_GRACE_MS) return;                 // กะพริบสั้นๆ ไม่นับ
+  if(!a.hidden && Date.now()-lastShot<8000) return;         // ตัวแคปหน้าจอเปิดหน้าต่างทับ นับเป็นการแคปไปแล้ว
+  const sec=Math.round(ms/1000);
+  if(a.hidden){ record('lv',sec,'ออกจากหน้าจอสอบ'); showWarn('lv',sec); }
+  else { record('ov',sec,'มีหน้าต่างอื่นทับหน้าจอสอบ'); showWarn('ov',sec); }
+}
+function poll(){
+  if(!quizActive) return;
+  if(document.hidden||!document.hasFocus()) beginAway(); else endAway();
+}
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) beginAway(); else if(document.hasFocus()) endAway(); });
+window.addEventListener('blur',beginAway);
+window.addEventListener('focus',()=>{ if(!document.hidden) endAway(); });
+window.addEventListener('pagehide',()=>{ if(quizActive&&exam){ exam.leftAt=Date.now(); saveProgress(); } });
+window.addEventListener('pageshow',()=>{ if(quizActive&&exam&&exam.leftAt){ exam.leftAt=null; saveProgress(); } });
+function onBeforeUnload(e){ if(quizActive){ e.preventDefault(); e.returnValue=''; } }
+
+// ตรวจ "แป้นพิมพ์/หน้าต่างแชตของแอปอื่นเปิดทับ" จากขนาดพื้นที่แสดงผลที่เปลี่ยน (หน้าสอบไม่มีช่องพิมพ์ ถ้าแป้นพิมพ์เด้งขึ้นมาแปลว่าพิมพ์อยู่ที่อื่น)
+let vvBase=null, vvAway=null, vvTimer=null;
+function vp(){ const v=window.visualViewport; return v?{h:v.height,w:v.width,s:v.scale||1}:{h:window.innerHeight,w:window.innerWidth,s:1}; }
+function calibrateVV(delay){
+  vvBase=null; clearTimeout(vvTimer);
+  vvTimer=setTimeout(()=>{ if(quizActive&&!vvAway){ const p=vp(); vvBase={h:p.h,w:p.w}; } },delay||1200);
+}
+function updateMask(){ document.body.classList.toggle('away',!!(away||vvAway)); }
+function onVV(){
+  if(!quizActive||!vvBase) return;
+  const p=vp(); if(p.s>1.05) return;                        // กำลังซูมนิ้ว ไม่นับ
+  const b=vvBase;
+  if(Math.abs(p.w-b.h)/b.h<.12 && Math.abs(p.h-b.w)/b.w<.25){ vvBase={h:p.h,w:p.w}; return; }   // หมุนจอ ไม่นับ
+  if(Math.abs(p.w-b.w)/b.w>.15){                            // ความกว้างเปลี่ยน = แยกหน้าจอ/ย่อหน้าต่าง
+    vvBase={h:p.h,w:p.w}; vvAway=null; updateMask();
+    record('ov',0,'ขนาดหน้าต่างเปลี่ยน (แยกหน้าจอ/ย่อหน้าต่าง)'); showWarn('ov',0,'ขนาดหน้าต่างสอบเปลี่ยนไป (แยกหน้าจอ/ย่อหน้าต่าง)'); return;
+  }
+  if(!vvAway && p.h<b.h*.75){ vvAway={t0:Date.now()}; updateMask(); }
+  else if(vvAway && p.h>=b.h*.85){
+    const sec=Math.round((Date.now()-vvAway.t0)/1000); vvAway=null; updateMask();
+    record('ov',sec,'มีแป้นพิมพ์หรือแอปอื่นเปิดทับหน้าจอ'); showWarn('ov',sec,'มีแป้นพิมพ์หรือหน้าต่างแชตของแอปอื่นเปิดทับหน้าจอสอบ');
+  }
+}
+if(window.visualViewport) window.visualViewport.addEventListener('resize',onVV);
+window.addEventListener('resize',onVV);
+
+// โหมดเต็มจอ
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+function tryFs(){
+  const el=document.documentElement, rq=el.requestFullscreen||el.webkitRequestFullscreen;
+  if(!rq){ wantFs=false; return; }
+  try{ wantFs=true; const p=rq.call(el); if(p&&p.catch) p.catch(()=>{ wantFs=false; }); }catch(e){ wantFs=false; }
+}
+function exitFs(){ wantFs=false; try{ if(fsEl()){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); } }catch(e){} }
+function onFsChange(){
+  if(quizActive) calibrateVV(900);
+  if(!quizActive||!wantFs||fsEl()) return;
+  record('lv',0,'ออกจากโหมดเต็มจอ');
+  showWarn('fs',0);
+}
+document.addEventListener('fullscreenchange',onFsChange);
+document.addEventListener('webkitfullscreenchange',onFsChange);
+
+// การแคปหน้าจอ / พิมพ์ / บันทึกหน้า (ตรวจได้เฉพาะบนคอมพิวเตอร์ที่กดปุ่มลัด)
+function shotDetected(label){
+  if(!quizActive) return;
+  const now=Date.now(); if(now-lastShot<1500) return;
+  lastShot=now;
+  record('sh',0,label);
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText('ห้ามแคปหน้าจอขณะสอบ').catch(()=>{}); }catch(e){}
+  const f=$('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),1200);
+  showWarn('sh',0,label);
+}
+document.addEventListener('keydown',e=>{
+  if(!quizActive) return;
+  const k=(e.key||'').toLowerCase();
+  if(e.key==='PrintScreen'||e.code==='PrintScreen'){ shotDetected('กดปุ่ม PrintScreen'); return; }
+  if(e.metaKey&&e.shiftKey&&k==='s'){ shotDetected('กดปุ่มแคปหน้าจอ (Win+Shift+S)'); return; }
+  if(e.metaKey&&e.shiftKey&&['3','4','5','#','$','%'].includes(e.key)){ shotDetected('กดปุ่มแคปหน้าจอ (Mac)'); return; }
+  if((e.ctrlKey||e.metaKey)&&(k==='p'||k==='s')){ e.preventDefault(); shotDetected(k==='p'?'พยายามพิมพ์หน้าข้อสอบ':'พยายามบันทึกหน้าข้อสอบ'); }
+});
+document.addEventListener('keyup',e=>{ if(quizActive&&(e.key==='PrintScreen'||e.code==='PrintScreen')) shotDetected('กดปุ่ม PrintScreen'); });
+['copy','cut','contextmenu','dragstart','selectstart'].forEach(ev=>document.addEventListener(ev,e=>{ if(quizActive) e.preventDefault(); }));
+
+// หน้าต่างแจ้งเตือน
+function showWarn(kind,sec,label){
+  const cfg={
+    lv:['🚪','ตรวจพบการออกจากหน้าจอสอบ','เธอออกจากหน้าจอสอบไปประมาณ '+sec+' วินาที (สลับแท็บ/แอป หรือปิดหน้าจอ)'],
+    ov:['🪟','ตรวจพบมีหน้าต่างอื่นทับหน้าจอสอบ',(label||'มีหน้าต่างหรือป๊อปอัปมาทับหน้าจอสอบ')+(sec?' ประมาณ '+sec+' วินาที':'')],
+    sh:['📸','ตรวจพบการแคปหน้าจอ',(label||'พยายามแคปหน้าจอ')+' — ห้ามแคป พิมพ์ หรือบันทึกข้อสอบ'],
+    fs:['🖥️','ออกจากโหมดเต็มจอ','เธอออกจากโหมดเต็มจอระหว่างสอบ กดปุ่มด้านล่างเพื่อกลับเข้าเต็มจอ'],
+    rl:['🔄','ตรวจพบการปิดหรือโหลดหน้าเว็บใหม่','ระบบเปิดข้อสอบเดิมต่อให้ (เวลายังเดินต่อ) และนับเป็นการออกจากหน้าจอ 1 ครั้ง']
+  }[kind];
+  $('wIcon').textContent=cfg[0]; $('wTitle').textContent=cfg[1]; $('wMsg').textContent=cfg[2];
+  $('wCounts').innerHTML='<span>🚪 ออกจากหน้าจอ '+exam.lv+' ครั้ง</span><span>🪟 ทับหน้าจอ '+exam.ov+' ครั้ง</span><span>📸 แคป '+exam.sh+' ครั้ง</span>';
+  $('wOk').dataset.kind=kind;
+  $('modalWarn').classList.add('on');
+}
+$('wOk').onclick=()=>{
+  const k=$('wOk').dataset.kind;
+  $('modalWarn').classList.remove('on');
+  if(k==='fs'||k==='rl') tryFs();
+};
+
+/* =====================================================================
+   Submit + result
+   ===================================================================== */
+function doSubmit(timeout){
+  if(examSubmitted) return;
+  examSubmitted=true; quizActive=false;
+  clearInterval(timerInt); clearInterval(pollInt);
+  window.removeEventListener('beforeunload',onBeforeUnload);
+  vvAway=null; vvBase=null; clearTimeout(vvTimer); document.body.classList.remove('away','quiz-on');
+  $('modalWarn').classList.remove('on'); $('modalConfirm').classList.remove('on');
+  exitFs();
+  let score=0; const answers={};
+  QUESTIONS.forEach(q=>{ const a=exam.answers[q.id]; answers[q.id]=(a===undefined?null:a); if(a===q.a) score++; });
+  const pct=Math.round(score*100/TOTAL);
+  const attempt={
+    ts:new Date().toISOString(), no:ident.no, name:ident.name,
+    score, total:TOTAL, pct, pass:pct>=PASS_PERCENT,
+    sec:Math.min(Math.round((Date.now()-exam.startTs)/1000),TIME_LIMIT_MINUTES*60+5),
+    timeout:!!timeout, answers,
+    lv:exam.lv, ov:exam.ov, sh:exam.sh, awaySec:exam.awaySec, resumes:exam.resumes||0, log:exam.log
+  };
+  const k=histKey(ident.no,ident.name);
+  const hist=lsGet(k,[]); hist.unshift(attempt); lsSet(k,hist);
+  lsDel(PROG_KEY); exam=null;
+  showResult(attempt,true);
+}
+function makeCode(a){
+  const o={v:1,no:a.no,name:a.name,sc:a.score,tt:a.total,pc:a.pct,ps:a.pass?1:0,sec:a.sec,ts:a.ts,to:a.timeout?1:0,lv:a.lv||0,ov:a.ov||0,sh:a.sh||0,aw:a.awaySec||0,rs:a.resumes||0};
+  return 'PDT1-'+b64enc(JSON.stringify(o));
+}
+function integrityHTML(a){
+  const t=(a.lv||0)+(a.ov||0)+(a.sh||0);
+  let h='<h2 style="font-size:20px">🔍 บันทึกการตรวจสอบระหว่างสอบ</h2><div class="chips">'+
+    '<div class="chip '+(a.lv?'bad':'ok')+'"><b>'+(a.lv||0)+'</b>ออกจากหน้าจอ (ครั้ง)</div>'+
+    '<div class="chip '+(a.ov?'bad':'ok')+'"><b>'+(a.ov||0)+'</b>มีหน้าต่างทับจอ (ครั้ง)</div>'+
+    '<div class="chip '+(a.sh?'bad':'ok')+'"><b>'+(a.sh||0)+'</b>พยายามแคปจอ (ครั้ง)</div>'+
+    '<div class="chip"><b>'+(a.awaySec||0)+'</b>วินาทีที่ไม่อยู่หน้าสอบ</div></div>';
+  h+= t===0
+    ? '<div class="integ ok">🌟 ไม่พบการออกจากหน้าจอ การทับหน้าจอ หรือการแคปหน้าจอ เก่งมาก!</div>'
+    : '<div class="integ bad">⚠️ ระบบบันทึกเหตุการณ์ผิดปกติรวม '+t+' ครั้ง ครูจะเห็นข้อมูลนี้พร้อมคะแนน</div>';
+  if(a.log&&a.log.length){
+    h+='<ul class="log">'+a.log.map(x=>'<li>นาทีที่ '+fmt(x.t)+' · '+esc(x.l)+(x.d?' ('+x.d+' วินาที)':'')+'</li>').join('')+'</ul>';
+  }
+  return h;
+}
+function showResult(a,fresh){
+  let html='<div class="card result-hero pop">'+
+    '<div class="mascot big">'+(a.pass?'🎉':'💪')+'</div>'+
+    '<div class="bigscore">'+a.score+'<span>/ '+a.total+'</span></div>'+
+    '<div class="pct">'+a.pct+'%</div>'+
+    '<span class="tag '+(a.pass?'pass':'fail')+'">'+(a.pass?'ผ่านเกณฑ์ ✔':'ยังไม่ผ่านเกณฑ์ (เกณฑ์ '+PASS_PERCENT+'%)')+'</span>'+
+    '<p style="margin:12px 0 0"><b>'+esc(a.name)+'</b> · เลขที่ '+esc(a.no)+'</p>'+
+    '<p style="margin:2px 0;color:var(--muted)">ใช้เวลา '+fmt(a.sec)+' นาที · ส่งเมื่อ '+esc(thDate(a.ts))+'</p>'+
+    (a.timeout?'<div class="note warn">⏰ หมดเวลา ระบบส่งข้อสอบให้อัตโนมัติ (ข้อที่ยังไม่ได้ตอบนับเป็นผิด)</div>':'')+
+    '</div>';
+  html+='<div class="card pop">'+integrityHTML(a)+'</div>';
+  html+='<div class="card pop"><h2 style="font-size:20px">🔑 รหัสส่งครู</h2>'+
+    '<p style="margin:4px 0 8px;color:var(--muted)">คัดลอกรหัสนี้ส่งให้ครู (ไม่มีคำตอบ มีแค่สรุปคะแนนและจำนวนครั้งที่ตรวจพบ)</p>'+
+    '<div class="code" id="codeBox">'+esc(makeCode(a))+'</div>'+
+    '<button class="btn ghost block" id="btnCopyCode" style="margin-top:8px">📋 คัดลอกรหัส</button></div>';
+  html+='<div class="card pop"><h2 style="font-size:20px">📖 ทบทวนคำตอบ</h2>'+QUESTIONS.map(q=>{
+    const mine=a.answers[q.id];
+    const ok=mine===q.a;
+    let line;
+    if(ok) line='<span class="ans-ok">✅ ตอบถูก'+(SHOW_CORRECT_ANSWERS?': '+esc(q.o[q.a]):'')+'</span>';
+    else{
+      const my=(mine===null||mine===undefined)?'ไม่ได้ตอบ':esc(q.o[mine]);
+      line='<span class="ans-bad">❌ '+(SHOW_CORRECT_ANSWERS?'ตอบ: '+my:(mine===null||mine===undefined?'ไม่ได้ตอบ':'ตอบผิด'))+'</span>'+
+        (SHOW_CORRECT_ANSWERS?'<br><span class="ans-ok">เฉลย: '+esc(q.o[q.a])+'</span>':'');
+    }
+    return '<div class="rev"><div class="q">'+(q.id+1)+'. '+esc(q.q)+'</div>'+line+'</div>';
+  }).join('')+'</div>';
+  $('resultBody').innerHTML=html;
+  $('btnCopyCode').onclick=()=>copyText(makeCode(a),'คัดลอกรหัสแล้ว');
+  showScreen('s-result'); setWatermark(a.name,a.no);
+  if(fresh&&a.pass&&typeof confetti==='function'){
+    try{ confetti({particleCount:140,spread:80,origin:{y:.35}}); }catch(e){}
+  }
+}
+function copyText(txt,msg){
+  const done=()=>toast(msg||'คัดลอกแล้ว');
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt,done)); }
+  else fallbackCopy(txt,done);
+}
+function fallbackCopy(txt,done){
+  const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('คัดลอกไม่สำเร็จ ให้กดค้างที่ข้อความแล้วคัดลอกเอง'); }
+  document.body.removeChild(ta);
+}
+
+/* =====================================================================
+   History
+   ===================================================================== */
+function openHistory(){
+  const id=readIdent(); if(!id) return;
+  const list=lsGet(histKey(id.no,id.name),[]);
+  $('histWho').textContent=id.name+' · เลขที่ '+id.no;
+  $('histList').innerHTML = list.length ? list.map((a,i)=>
+    '<div class="hist" data-i="'+i+'"><div><b>'+a.score+'/'+a.total+' ('+a.pct+'%)</b> '+(a.pass?'✅':'❌')+
+    '<br><span style="color:var(--muted);font-size:14px">'+esc(thDate(a.ts))+' · '+fmt(a.sec)+' นาที'+(a.timeout?' · หมดเวลา':'')+
+    ' · ผิดปกติ '+((a.lv||0)+(a.ov||0)+(a.sh||0))+' ครั้ง</span></div><span>›</span></div>').join('')
+    : '<p>ยังไม่มีประวัติการสอบบนเครื่องนี้</p>';
+  $('histList').querySelectorAll('.hist').forEach(el=>el.onclick=()=>showResult(list[+el.dataset.i],false));
+  showScreen('s-history');
+}
+
+/* =====================================================================
+   Teacher mode
+   ===================================================================== */
+function tLoad(){ return lsGet(TEACH_KEY,[]); }
+function tDecode(code){
+  try{
+    const o=JSON.parse(b64dec(code.slice(5)));
+    if(!o||o.v!==1||o.no===undefined) return null;
+    return o;
+  }catch(e){ return null; }
+}
+function tRender(){
+  const rows=tLoad().map((r,i)=>({i,o:tDecode(r.code)})).filter(x=>x.o);
+  rows.sort((a,b)=>(Number(a.o.no)-Number(b.o.no))||(a.i-b.i));
+  const n=rows.length;
+  const avg=n?rows.reduce((s,x)=>s+x.o.pc,0)/n:0;
+  const pass=rows.filter(x=>x.o.ps).length;
+  const flagged=rows.filter(x=>(x.o.lv+x.o.ov+x.o.sh)>0).length;
+  $('tStats').innerHTML=
+    '<div class="chip"><b>'+n+'</b>จำนวนที่ส่งแล้ว</div>'+
+    '<div class="chip"><b>'+avg.toFixed(1)+'%</b>ค่าเฉลี่ย</div>'+
+    '<div class="chip ok"><b>'+pass+'</b>ผ่านเกณฑ์</div>'+
+    '<div class="chip '+(flagged?'bad':'ok')+'"><b>'+flagged+'</b>มีเหตุการณ์ผิดปกติ</div>';
+  $('tTable').innerHTML='<tr><th>เลขที่</th><th>ชื่อ-นามสกุล</th><th>คะแนน</th><th>%</th><th>ผล</th><th>เวลา</th><th>ออกจอ</th><th>ทับจอ</th><th>แคป</th><th>ไม่อยู่หน้าสอบ(วิ)</th><th>หมายเหตุ</th><th></th></tr>'+
+    rows.map(x=>{ const o=x.o, bad=(o.lv+o.ov+o.sh)>0;
+      return '<tr class="'+(bad?'flag':'')+'"><td>'+esc(o.no)+'</td><td>'+esc(o.name)+'</td><td>'+o.sc+'/'+o.tt+'</td><td>'+o.pc+'</td><td>'+(o.ps?'ผ่าน':'ไม่ผ่าน')+'</td><td>'+fmt(o.sec)+'</td><td>'+o.lv+'</td><td>'+o.ov+'</td><td>'+o.sh+'</td><td>'+o.aw+'</td><td>'+(o.to?'หมดเวลา ':'')+(o.rs?'รีเฟรช '+o.rs+' ครั้ง':'')+'</td><td><button class="link" data-del="'+x.i+'">ลบ</button></td></tr>'; }).join('');
+  $('tTable').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ const l=tLoad(); l.splice(+b.dataset.del,1); lsSet(TEACH_KEY,l); tRender(); });
+  return rows;
+}
+function submitPin(){
+  if($('pinIn').value===TEACHER_PIN){ $('modalPin').classList.remove('on'); $('tMsg').textContent=''; tRender(); showScreen('s-teacher'); }
+  else $('pinErr').textContent='PIN ไม่ถูกต้อง';
+}
+$('btnTeacher').onclick=()=>{ $('pinIn').value=''; $('pinErr').textContent=''; $('modalPin').classList.add('on'); setTimeout(()=>{ try{$('pinIn').focus();}catch(e){} },150); };
+$('pinOk').onclick=submitPin;
+$('pinNo').onclick=()=>$('modalPin').classList.remove('on');
+$('pinIn').addEventListener('keydown',e=>{ if(e.key==='Enter') submitPin(); });
+$('tProcess').onclick=()=>{
+  const found=$('tCodes').value.match(/PDT1-[A-Za-z0-9+\/=]+/g)||[];
+  const list=tLoad(); const have=new Set(list.map(x=>x.code));
+  let added=0,bad=0,dup=0;
+  found.forEach(c=>{ if(!tDecode(c)){ bad++; return; } if(have.has(c)){ dup++; return; } list.push({code:c,at:Date.now()}); have.add(c); added++; });
+  lsSet(TEACH_KEY,list);
+  $('tMsg').style.color=bad?'var(--coral)':'#0b8a6f';
+  $('tMsg').textContent='เพิ่มใหม่ '+added+' รายการ'+(dup?' · ซ้ำ '+dup+' (ข้าม)':'')+(bad?' · อ่านไม่ได้ '+bad:'');
+  $('tCodes').value=''; tRender();
+};
+$('tCopy').onclick=()=>{
+  const rows=tRender();
+  const head=['เลขที่','ชื่อ-นามสกุล','คะแนน','เต็ม','ร้อยละ','ผล','เวลา(วินาที)','ออกจากหน้าจอ','ทับหน้าจอ','แคปหน้าจอ','ไม่อยู่หน้าสอบ(วินาที)','หมดเวลา','รีเฟรช','ส่งเมื่อ'];
+  const lines=[head.join('\t')].concat(rows.map(x=>{ const o=x.o; return [o.no,o.name,o.sc,o.tt,o.pc,o.ps?'ผ่าน':'ไม่ผ่าน',o.sec,o.lv,o.ov,o.sh,o.aw,o.to?'ใช่':'',o.rs||0,thDate(o.ts)].join('\t'); }));
+  copyText(lines.join('\n'),'คัดลอกตารางแล้ว');
+};
+$('tClear').onclick=()=>askConfirm('ล้างรายการคะแนนทั้งหมดบนเครื่องนี้?',()=>{ lsDel(TEACH_KEY); tRender(); });
+$('tClearProg').onclick=()=>askConfirm('ล้างข้อสอบที่ค้างบนเครื่องนี้? (นักเรียนคนนั้นจะเริ่มสอบใหม่ได้)',()=>{ lsDel(PROG_KEY); toast('ล้างแล้ว'); });
+$('tBack').onclick=()=>{ showScreen('s-start'); checkResumeBox(); };
+
+/* =====================================================================
+   Wiring
+   ===================================================================== */
+$('btnStart').onclick=startExam;
+$('btnHist').onclick=openHistory;
+$('btnHistBack').onclick=()=>showScreen('s-start');
+$('btnHome').onclick=()=>{ $('inName').value=''; $('inNo').value=''; showScreen('s-start'); checkResumeBox(); };
+renderRules();
+checkResumeBox();
+</script>
+</body>
+</html>
